@@ -156,10 +156,19 @@ h6 {
     transform: translateY(0);
   }
 }
-
 .thank-you-top-section {
   text-align: center;
   padding-top: 107px;
+  position: relative;
+}
+.confetti-animation {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  top: -20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
 }
 .thank-you-top-section p {
   font-size: 25px;
@@ -177,6 +186,16 @@ h6 {
   padding-top: 0px;
   padding-bottom: 50px;
 }
+/* Hide the elements initially */
+.hidden-initially {
+  visibility: hidden;
+}
+.animate__animated {
+  visibility: visible !important;
+}
+
+
+
 .graphic-pattern {
   background-image: url("./assets/svg/pattern-1.svg");
   width: 100%;
@@ -550,6 +569,15 @@ padding-bottom: 40px;
   text-align: center;
   padding-top: 70px;
 }
+.confetti-animation {
+  position: absolute;
+  width: 50%;
+  height: 100px;
+  top: -60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
 .thank-you-top-section p {
   font-size: 20px;
   line-height: 30px;
@@ -821,6 +849,15 @@ column-gap: 40px;
     text-align: center;
     padding-top: 58px;
   }
+  .confetti-animation {
+    position: absolute;
+    width: 50%;
+    height: 100px;
+    top: -20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
   .thank-you-top-section p {
     font-size: 15px;
     line-height: 20px;
@@ -1047,6 +1084,15 @@ column-gap: 40px;
   .header-section-contact svg {
     width: 30px;
     height: 30px;
+  }
+  .confetti-animation {
+    position: absolute;
+    width: 80%;
+    height: 100px;
+    top: -25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
   }
   .thank-you-top-section p {
     font-size: 14px;

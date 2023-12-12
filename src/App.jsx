@@ -1,8 +1,10 @@
-import React, { useState, Suspense } from "react";
+import React, { useState,useEffect, Suspense } from "react";
 import Header from "./components/Header/header";
 const ReactPlayer = React.lazy(() => import("react-player"));
 import { BounceLoader } from "react-spinners";
-
+import Loading from './components/Loader/Loader'
+import Lottie from "lottie-react";
+import 'animate.css';
 
 import pattern from "./assets/svg/pattern-1.svg";
 import pattern_mob from "./assets/svg/pattern-1-mob.svg"
@@ -16,7 +18,7 @@ import love_icon from "./assets/images/love-icon.png"
 import like_icon from "./assets/svg/like-icon.svg"
 import follow_icon from "./assets/svg/follow-icon.svg"
 import fire_icom from "./assets/svg/fire-icon.svg"
-
+import Confetti from "./assets/images/confetti.json"
 function Loader() {
   return (
     <div
@@ -37,20 +39,43 @@ function Loader() {
 function App() {
   const [count, setCount] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false); 
+    }, 2000);
+
+    const confettiTimer = setTimeout(() => {
+      setShowConfetti(true);
+    }, 4000);
+
+    return () => clearTimeout(confettiTimer);
+  }, []);
+
+  
   const handlePlayPause = () => {
     setPlaying(!playing);
   };
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
     <>
       <Header />
       <div className="thank-you-top-section">
-        <h1 className="">Congratulations</h1>
-        <p>
+      {showConfetti && (
+          <div className="confetti-animation">
+            <Lottie animationData={Confetti} loop={false}  />
+          </div>
+        )}
+        <h1 className="hidden-initially animate__animated animate__fadeInUp">Congratulations</h1>
+        <p className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">
           You Successfully Claimed Your Free Consultation Our Executive Will
           Call You Shortly
         </p>
-        <h2>Thank You</h2>
+        <h2 className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">Thank You</h2>
       </div>
       <div className="thank-you-video-main ">
         <div className="graphic-pattern"></div>
