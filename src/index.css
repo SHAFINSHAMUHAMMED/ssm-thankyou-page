@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'SK Modernist Bold';
-  src: url('../public/fonts/Sk-Modernist-Bold.otf') format('opentype');
+  src: url('/fonts/Sk-Modernist-Bold.otf') format('opentype');
   /* OTF format */
   font-weight: bold;
   font-style: normal;
@@ -12,7 +12,7 @@
 
 @font-face {
   font-family: 'SK Modernist Mono';
-  src: url('../public/fonts/Sk-Modernist-Mono.otf') format('opentype');
+  src: url('/fonts/Sk-Modernist-Mono.otf') format('opentype');
   /* OTF format */
   font-weight: normal;
   font-style: normal;
@@ -20,7 +20,7 @@
 
 @font-face {
   font-family: 'SK Modernist Regular';
-  src: url('../public/fonts/Sk-Modernist-Regular.otf') format('opentype');
+  src: url('/fonts/Sk-Modernist-Regular.otf') format('opentype');
   /* OTF format */
   font-weight: normal;
   font-style: normal;
@@ -178,6 +178,9 @@ h6 {
   width: 617px;
   margin: auto;
 }
+.thank-you-top-section h1 {
+  font-size: 110px;
+}
 .thank-you-top-section h2 {
   font-family: 'Marck Script', cursive;
   font-style: normal;
@@ -196,6 +199,7 @@ h6 {
 
 
 
+
 .graphic-pattern {
   background-image: url("./assets/svg/pattern-1.svg");
   width: 100%;
@@ -206,7 +210,7 @@ h6 {
   display: none;
 }
 .thank-you-video-main {
-  height: 1138px;
+  height: 1100px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -583,6 +587,9 @@ padding-bottom: 40px;
   line-height: 30px;
   width: 60%;
 }
+.thank-you-top-section h1 {
+  font-size: 70px;
+}
 .thank-you-top-section h2 {
   padding-top: 21px;
 }
@@ -863,10 +870,14 @@ column-gap: 40px;
     line-height: 20px;
     width: 60%;
   }
+  .thank-you-top-section h1 {
+    font-size: 40px;
+  }
   .thank-you-top-section h2 {
     font-size: 57px;
     letter-spacing: -1.15px;
     padding-top: 0px;
+    padding-bottom:30px ;
   }
   .graphic-pattern {
     display: none;

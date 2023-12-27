@@ -72,10 +72,10 @@ function App() {
         )}
         <h1 className="hidden-initially animate__animated animate__fadeInUp">Congratulations</h1>
         <p className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">
-          You Successfully Claimed Your Free Consultation Our Executive Will
+          You Successfully Claimed Your Free Consultation Our Consultant Will
           Call You Shortly
         </p>
-        <h2 className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">Thank You</h2>
+        <h2 className="hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s ">Thank You</h2>
       </div>
       <div className="thank-you-video-main ">
         <div className="graphic-pattern"></div>
