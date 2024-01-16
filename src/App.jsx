@@ -119,12 +119,6 @@ function App() {
            <span className="text-[#259D4A]">Learners University College</span>  is For Dreamers, Achievers, And
             Pioneers.
           </h3>
-          {/* <div className="video-player">
-            <Player/>
-          </div> */}
-              {/* <div className="video-player">
-          <iframe className="video-player-iframe" title="vimeo-player" src="https://player.vimeo.com/video/763299013?h=6e0c81e5d9" width="100%" height="100%" frameborder="0"    allowfullscreen></iframe>
-              </div> */}
           <div className="player-container">
           <Suspense fallback={<Loader />}>
           <ReactPlayer
@@ -414,7 +408,7 @@ function App() {
   <path fill-rule="evenodd" clip-rule="evenodd" d="M108.84 115.459L141.696 116.449L107.453 75.7913L146.829 40.0817L114.139 36.6637L112.53 5.05941L75.8761 38.2995L44.0007 0.452776L38.1761 31.5574L5.32241 30.5695L39.5659 71.228L0.189351 106.937L32.8815 110.354L34.489 141.96L71.1425 108.72L103.017 146.566L108.84 115.459Z" fill="#259D4A"/>
 </svg>
         </div>
-        <p className="text-[#05170F] font-medium text-center">Landing Page & Digital Marketing By <span className="text-[#009B3E] font-bold">WebQ Media</span></p>
+        <p className="text-[#05170F] font-medium text-center">Landing Page & Digital Marketing By <a href="https://webqmedia.com/" target="_blank" className="text-[#009B3E] font-bold">WebQ Media</a></p>
       </div>
 
     </>
