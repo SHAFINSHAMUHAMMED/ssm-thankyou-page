@@ -168,7 +168,7 @@ h6 {
   top: -20%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: 0;
 }
 .thank-you-top-section p {
   font-size: 25px;
@@ -187,7 +187,6 @@ h6 {
   font-weight: 400;
   letter-spacing: -1.79px;
   padding-top: 0px;
-  padding-bottom: 50px;
 }
 /* Hide the elements initially */
 .hidden-initially {
@@ -196,6 +195,40 @@ h6 {
 .animate__animated {
   visibility: visible !important;
 }
+
+
+
+/* Additional styles for the button */
+.whatsapp-question-button {
+  display: flex;
+  max-width: 320px;
+  justify-content: space-between;
+  align-items: center;
+  margin: auto;
+  background-color: #25d366;
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  margin-bottom: 40px;
+  z-index: 100;
+}
+
+.whatsapp-question-button:hover {
+  background-color: rgba(18, 189, 80, 0.722)
+}
+
+.whatsapp-question-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 211, 101, 0.729); /* Light green focus ring */
+}
+.whatsapp-question-button svg {
+  width: 25px;
+  height: 25px;
+}
+
 
 
 
@@ -580,7 +613,7 @@ padding-bottom: 40px;
   top: -60%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: 0;
 }
 .thank-you-top-section p {
   font-size: 20px;
@@ -592,6 +625,16 @@ padding-bottom: 40px;
 }
 .thank-you-top-section h2 {
   padding-top: 21px;
+}
+.whatsapp-question-button {
+  max-width: 280px;
+  font-size: 16px;
+  padding: 10px 20px;
+  margin-bottom: 30px;
+}
+.whatsapp-question-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .thank-you-video-main{
@@ -863,7 +906,7 @@ column-gap: 40px;
     top: -20%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10;
+    z-index: 0;
   }
   .thank-you-top-section p {
     font-size: 15px;
@@ -877,8 +920,21 @@ column-gap: 40px;
     font-size: 57px;
     letter-spacing: -1.15px;
     padding-top: 0px;
-    padding-bottom:30px ;
+    padding-bottom:10px ;
   }
+  .whatsapp-question-button {
+    max-width: 240px;
+    font-size: 14px;
+    padding: 8px 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+    gap: 10px;
+  }
+  .whatsapp-question-button svg {
+    width: 20px;
+    height: 20px;
+  }
+  
   .graphic-pattern {
     display: none;
   }
@@ -1103,7 +1159,7 @@ column-gap: 40px;
     top: -25%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10;
+    z-index: 0;
   }
   .thank-you-top-section p {
     font-size: 14px;

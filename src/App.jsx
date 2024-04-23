@@ -58,6 +58,14 @@ function App() {
   const handlePlayPause = () => {
     setPlaying(!playing);
   };
+  const handleClick = () => {
+    window.open(
+      "https://api.whatsapp.com/send?phone=971503772675&text=Hello%2C%20I%20have%20a%20question%20about%20your%20MBA%20program.",
+  
+      "_blank"
+    );
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -66,17 +74,32 @@ function App() {
       <Header />
       <div className="thank-you-top-section">
       {showConfetti && (
-          <div className="confetti-animation">
-            <Lottie animationData={Confetti} loop={false}  />
-          </div>
-        )}
-        <h1 className="hidden-initially animate__animated animate__fadeInUp">Congratulations</h1>
-        <p className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">
-          You Successfully Claimed Your Free Consultation Our Consultant Will
-          Call You Shortly
-        </p>
-        <h2 className="hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s ">Thank You</h2>
-      </div>
+        <div className="confetti-animation">
+          <Lottie animationData={Confetti} loop={false} />
+        </div>
+      )}
+      <h1 className="hidden-initially animate__animated animate__fadeInUp">Congratulations</h1>
+      <p className="hidden-initially animate__animated animate__fadeInUp animate__delay-1s">
+        You Successfully Claimed Your Free Consultation. Our Consultant Will
+        Call You Shortly.
+      </p>
+      <h2 className="hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s">
+        Thank You
+      </h2>
+
+      {/* Ask a Question on WhatsApp button */}
+      <a
+  onClick={handleClick}
+  href=""
+  target="_blank"
+  rel="noopener noreferrer"
+  className="whatsapp-question-button hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s"
+>
+  Ask a Question on WhatsApp
+  <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none"><path d="M0 41.0841L2.90374 30.5397C1.10852 27.4447 0.166769 23.9397 0.176579 20.3565C0.176579 9.12871 9.35868 0 20.6303 0C26.1042 0 31.2446 2.11864 35.1 5.96539C38.9651 9.81214 41.0938 14.9281 41.084 20.3663C41.084 31.5941 31.9019 40.7228 20.6205 40.7228H20.6107C17.187 40.7228 13.8222 39.8636 10.8302 38.2429L0 41.0841ZM11.3501 34.5622L11.9681 34.9332C14.5776 36.4758 17.5696 37.2861 20.6205 37.2959H20.6303C29.9988 37.2959 37.6309 29.7098 37.6309 20.376C37.6309 15.8556 35.8651 11.6086 32.6573 8.40622C29.4494 5.20385 25.1723 3.44645 20.6303 3.44645C11.2618 3.43669 3.62968 11.0228 3.62968 20.3565C3.62968 23.5491 4.52238 26.6636 6.22931 29.3583L6.63152 30.0027L4.91478 36.2414L11.3501 34.5622Z" fill="white"></path><path d="M0.716797 40.3715L3.52244 30.1884C1.78608 27.2105 0.873756 23.8227 0.873756 20.3665C0.883566 9.52917 9.74194 0.712891 20.631 0.712891C25.9185 0.712891 30.8725 2.76319 34.6003 6.47325C38.3281 10.1833 40.3784 15.1236 40.3784 20.3762C40.3784 31.2135 31.5102 40.0298 20.631 40.0298H20.6212C17.3152 40.0298 14.0681 39.1999 11.184 37.6378L0.716797 40.3715Z" fill="url(#paint0_linear_1154_1058)"></path><path d="M0 41.0841L2.90374 30.5397C1.10852 27.4447 0.166769 23.9397 0.176579 20.3565C0.176579 9.12871 9.35868 0 20.6303 0C26.1042 0 31.2446 2.11864 35.1 5.96539C38.9651 9.81214 41.0938 14.9281 41.084 20.3663C41.084 31.5941 31.9019 40.7228 20.6205 40.7228H20.6107C17.187 40.7228 13.8222 39.8636 10.8302 38.2429L0 41.0841ZM11.3501 34.5622L11.9681 34.9332C14.5776 36.4758 17.5696 37.2861 20.6205 37.2959H20.6303C29.9988 37.2959 37.6309 29.7098 37.6309 20.376C37.6309 15.8556 35.8651 11.6086 32.6573 8.40622C29.4494 5.20385 25.1723 3.44645 20.6303 3.44645C11.2618 3.43669 3.62968 11.0228 3.62968 20.3565C3.62968 23.5491 4.52238 26.6636 6.22931 29.3583L6.63152 30.0027L4.91478 36.2414L11.3501 34.5622Z" fill="url(#paint1_linear_1154_1058)"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M15.5199 11.8445C15.1373 10.9951 14.7351 10.9756 14.3722 10.9658C14.0779 10.9561 13.7345 10.9561 13.3912 10.9561C13.0478 10.9561 12.4985 11.083 12.0276 11.5907C11.5567 12.0984 10.2422 13.3285 10.2422 15.8377C10.2422 18.3371 12.0766 20.7584 12.3317 21.1001C12.5868 21.4419 15.8731 26.7433 21.0625 28.7839C25.3789 30.4827 26.2618 30.141 27.1938 30.0531C28.1257 29.9652 30.2152 28.8229 30.6469 27.6318C31.0687 26.4407 31.0687 25.4253 30.9412 25.2105C30.8136 24.9957 30.4703 24.8688 29.9602 24.6149C29.45 24.3611 26.9387 23.1309 26.4678 22.9552C25.9969 22.7892 25.6536 22.7013 25.3201 23.209C24.9767 23.7167 23.9957 24.859 23.7014 25.2007C23.4071 25.5425 23.103 25.5815 22.5929 25.3277C22.0828 25.0738 20.4347 24.5368 18.4825 22.799C16.962 21.4516 15.932 19.7821 15.6377 19.2744C15.3434 18.7667 15.6082 18.4933 15.8633 18.2395C16.0889 18.0149 16.3734 17.6439 16.6285 17.351C16.8835 17.0581 16.9718 16.8433 17.1386 16.5016C17.3053 16.1599 17.2269 15.867 17.0993 15.6132C16.9718 15.3691 15.9712 12.8501 15.5199 11.8445Z" fill="white"></path><defs><linearGradient id="paint0_linear_1154_1058" x1="20.5466" y1="40.3695" x2="20.5466" y2="0.711503" gradientUnits="userSpaceOnUse"><stop stop-color="#20B038"></stop><stop offset="1" stop-color="#60D66A"></stop></linearGradient><linearGradient id="paint1_linear_1154_1058" x1="20.546" y1="41.0802" x2="20.546" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#F9F9F9"></stop><stop offset="1" stop-color="white"></stop></linearGradient></defs></svg>
+</a>
+
+    </div>
       <div className="thank-you-video-main ">
         <div className="graphic-pattern"></div>
         <div className="graphic-pattern-mob"></div>
@@ -312,8 +335,7 @@ function App() {
                 />
               </svg>
               <h6>
-                B01, Ground Floor, North Entrance – Sharjah Book Authority – Al
-                Zahiya, Sharjah, UAE
+              H01, Ground Floor, South Entrance - Sharjah Book Authority - Al Zahiya, Sharjah, UAE
               </h6>
             </div>
             
@@ -377,7 +399,7 @@ function App() {
                   </linearGradient>
                 </defs>
               </svg>
-              <h6>+971 56 403 1122</h6>
+              <h6>+971 50 377 2675</h6>
               </a>
             </div>
             
@@ -397,7 +419,7 @@ function App() {
                   fill="#0B434B"
                 />
               </svg>
-              <h6>info@leanersuae.com</h6>
+              <h6>inquiry@learnersuae.com</h6>
               </a>
             </div>
             </div>
