@@ -205,7 +205,7 @@ h6 {
   justify-content: space-between;
   align-items: center;
   margin: auto;
-  background-color: #25d366;
+  background-color: #0b434b;
   color: white;
   font-size: 18px;
   padding: 12px 24px;
@@ -217,12 +217,12 @@ h6 {
 }
 
 .whatsapp-question-button:hover {
-  background-color: rgba(18, 189, 80, 0.722)
+  background-color:#0b424bdd
 }
 
 .whatsapp-question-button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 211, 101, 0.729); /* Light green focus ring */
+  box-shadow: 0 0 0 3px rgba(13, 86, 90, 0.439); /* Light green focus ring */
 }
 .whatsapp-question-button svg {
   width: 25px;
@@ -1124,7 +1124,7 @@ column-gap: 40px;
       gap: 14px;
     }
     .address-section h6 {
-      max-width: 70%;
+      max-width: 80%;
       font-size: 17px;
     }
     .address-content svg {

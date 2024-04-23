@@ -345,7 +345,7 @@ function App() {
             <div className="address-content">
             <a
             className="address-content"
-    href="https://wa.me/971564031122"
+    href="https://wa.me/971503772675"
     target="_blank"
     rel="noopener noreferrer"
   >
@@ -404,7 +404,7 @@ function App() {
             </div>
             
             <div className="address-content">
-              <a className="address-content" href="mailto:info@leanersuae.com">
+              <a className="address-content" href="mailto:inquiry@learnersuae.com">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="33"
