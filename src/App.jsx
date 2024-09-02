@@ -60,7 +60,7 @@ function App() {
   };
   const handleClick = () => {
     window.open(
-      "https://api.whatsapp.com/send?phone=971503772675&text=Hello%2C%20I%20have%20a%20question%20about%20your%20MBA%20program.",
+      "https://api.whatsapp.com/send?phone=971502432170&text=Hello%2C%20I%20have%20a%20question%20about%20your%20MBA%20program.",
   
       "_blank"
     );
