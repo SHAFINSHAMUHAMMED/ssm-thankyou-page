@@ -42,7 +42,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    dateTime: "",
+  });
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -63,6 +69,121 @@ function App() {
     }
     setIsModalOpen(!isModalOpen);
   };
+
+  const baseTimeSlots = [
+    "9:00 AM - 10:00 AM",
+    "10:00 AM - 11:00 AM",
+    "11:00 AM - 12:00 PM",
+    "12:00 PM - 1:00 PM",
+    "1:00 PM - 2:00 PM",
+    "2:00 PM - 3:00 PM",
+    "3:00 PM - 4:00 PM",
+    "4:00 PM - 5:00 PM",
+    "5:00 PM - 6:00 PM",
+    "6:00 PM - 7:00 PM",
+    "7:00 PM - 8:00 PM"
+  ];
+
+  const getCurrentDate = () => {
+    const now = new Date();
+    return now.toISOString().split('T')[0];
+  };
+
+  const isWeekend = (date) => {
+    const day = new Date(date).getDay();
+    return day === 0 || day === 6;
+  };
+
+  const convertTimeStringTo24Hour = (timeStr) => {
+    const [time, period] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    return hours * 60 + minutes; // Convert to minutes for easier comparison
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === "date") {
+      setFormData(prev => ({ ...prev, timeSlot: "" }));
+    }
+  };
+
+  useEffect(() => {
+    if (formData.date) {
+      const now = new Date();
+      const selectedDate = new Date(formData.date);
+      
+      // Reset time components for date comparison
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const selected = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate()
+      );
+
+      // Return empty slots for weekends
+      if (isWeekend(formData.date)) {
+        setAvailableTimeSlots([]);
+        return;
+      }
+
+      if (selected.getTime() === today.getTime()) {
+        // For current day, filter slots based on current time + 2 hours
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const twoHoursFromNow = currentMinutes + 60; // 2 hours in minutes
+
+        const availableSlots = baseTimeSlots.filter(slot => {
+          const startTime = slot.split(' - ')[0];
+          const startMinutes = convertTimeStringTo24Hour(startTime);
+          return startMinutes >= twoHoursFromNow;
+        });
+
+        setAvailableTimeSlots(availableSlots);
+      } else if (selected > today) {
+        // Future date - show all slots
+        setAvailableTimeSlots(baseTimeSlots);
+      } else {
+        // Past date - show no slots
+        setAvailableTimeSlots([]);
+      }
+    } else {
+      setAvailableTimeSlots([]);
+    }
+  }, [formData.date]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/getAppointment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          dateTime: `${formData.date} ${formData.timeSlot}`
+        }),
+        mode: "cors",
+      });
+      
+      const result = await response.json();
+      console.log("Server Response:", result);
+      alert("Your meeting has been scheduled!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error scheduling meeting:", error);
+      alert("Failed to schedule meeting. Please try again later.");
+    }
+  };
+
 
   const handlePlayPause = () => {
     setPlaying(!playing);
@@ -105,7 +226,7 @@ function App() {
         </button>
 
         {/* Modal for Scheduling Meeting */}
-        {isModalOpen && (
+        {/* {isModalOpen && (
           <div className="modal-overlay">
             <div
               className="modal-content"
@@ -128,7 +249,7 @@ function App() {
               ></script>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Ask a Question on WhatsApp button */}
         {/* <a
@@ -191,6 +312,101 @@ function App() {
           </svg>
         </a> */}
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" onClick={toggleModal}>
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-96" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Schedule a Meeting</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Full Name:</label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Phone Number:</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+
+              <div>
+            <label className="block text-sm font-medium text-gray-700">Select Date:</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleInputChange}
+              min={getCurrentDate()}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Select Time Slot:</label>
+            <select
+              name="timeSlot"
+              value={formData.timeSlot}
+              onChange={handleInputChange}
+              required
+              disabled={!formData.date}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            >
+              <option value="">Select a time slot</option>
+              {availableTimeSlots.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
+            </select>
+            {formData.date && availableTimeSlots.length === 0 && (
+              <p className="mt-1 text-sm text-red-600">No available time slots for selected date</p>
+            )}
+          </div>
+
+              <button 
+                type="submit" 
+                className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-all"
+              >
+                Confirm Meeting
+              </button>
+            </form>
+            <button
+              onClick={toggleModal} 
+              className="mt-4 w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <div className="thank-you-video-main ">
         <div className="graphic-pattern"></div>
         <div className="graphic-pattern-mob"></div>
