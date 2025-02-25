@@ -5,10 +5,6 @@ import { BounceLoader } from "react-spinners";
 import Loading from "./components/Loader/Loader";
 import Lottie from "lottie-react";
 import "animate.css";
-
-import pattern from "./assets/svg/pattern-1.svg";
-import pattern_mob from "./assets/svg/pattern-1-mob.svg";
-import video from "./assets/images/video-img.png";
 import mobile from "./assets/images/mobile-img.webp";
 import mobile2 from "./assets/images/mobile-img.png";
 import facebook from "./assets/svg/facebook.svg";
@@ -19,6 +15,7 @@ import like_icon from "./assets/svg/like-icon.svg";
 import follow_icon from "./assets/svg/follow-icon.svg";
 import fire_icom from "./assets/svg/fire-icon.svg";
 import Confetti from "./assets/images/confetti.json";
+import TimePicker from "./components/TimePicker/TimePicker";
 function Loader() {
   return (
     <div
@@ -40,13 +37,11 @@ function App() {
   const [count, setCount] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
     dateTime: "",
   });
   useEffect(() => {
@@ -81,12 +76,12 @@ function App() {
     "4:00 PM - 5:00 PM",
     "5:00 PM - 6:00 PM",
     "6:00 PM - 7:00 PM",
-    "7:00 PM - 8:00 PM"
+    "7:00 PM - 8:00 PM",
   ];
 
   const getCurrentDate = () => {
     const now = new Date();
-    return now.toISOString().split('T')[0];
+    return now.toISOString().split("T")[0];
   };
 
   const isWeekend = (date) => {
@@ -95,15 +90,15 @@ function App() {
   };
 
   const convertTimeStringTo24Hour = (timeStr) => {
-    const [time, period] = timeStr.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
-    
-    if (period === 'PM' && hours !== 12) {
+    const [time, period] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (period === "PM" && hours !== 12) {
       hours += 12;
-    } else if (period === 'AM' && hours === 12) {
+    } else if (period === "AM" && hours === 12) {
       hours = 0;
     }
-    
+
     return hours * 60 + minutes; // Convert to minutes for easier comparison
   };
 
@@ -112,15 +107,26 @@ function App() {
     setFormData({ ...formData, [name]: value });
 
     if (name === "date") {
-      setFormData(prev => ({ ...prev, timeSlot: "" }));
+      setFormData((prev) => ({ ...prev, timeSlot: "" }));
     }
   };
+
+  const [contactId, setContactId] = useState("");
+  const [name, setName] = useState("");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const contactId = urlParams.get("id");
+    const name = urlParams.get("name");
+    setContactId(contactId);
+    setName(name);
+  }, []);
 
   useEffect(() => {
     if (formData.date) {
       const now = new Date();
       const selectedDate = new Date(formData.date);
-      
+
       // Reset time components for date comparison
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const selected = new Date(
@@ -140,8 +146,8 @@ function App() {
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         const twoHoursFromNow = currentMinutes + 60; // 2 hours in minutes
 
-        const availableSlots = baseTimeSlots.filter(slot => {
-          const startTime = slot.split(' - ')[0];
+        const availableSlots = baseTimeSlots.filter((slot) => {
+          const startTime = slot.split(" - ")[0];
           const startMinutes = convertTimeStringTo24Hour(startTime);
           return startMinutes >= twoHoursFromNow;
         });
@@ -161,29 +167,79 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoadingApi(true);
+
     try {
-      const response = await fetch("http://localhost:5000/getAppointment", {
+      // Convert selected date and time slot to proper format
+      const [startTime, endTime] = convertTimeSlotToUTC(formData.date, formData.timeSlot);
+      console.log("Converted Start Time:", startTime);
+      console.log("Converted End Time:", endTime);
+      const response = await fetch("http://localhost:3003/api/appointment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          dateTime: `${formData.date} ${formData.timeSlot}`
+          startTime,
+          endTime,
+          contactId // Make sure this is available from your URL params
         }),
         mode: "cors",
       });
-      
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
       const result = await response.json();
       console.log("Server Response:", result);
       alert("Your meeting has been scheduled!");
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error scheduling meeting:", error);
-      alert("Failed to schedule meeting. Please try again later.");
+      alert("This slote is already taken!");
     }
+    setIsLoadingApi(false);
   };
-
+  
+  const convertTimeSlotToUTC = (date, timeSlot) => {
+    // Extract start and end times from the time slot
+    const [startStr, endStr] = timeSlot.split(' - ');
+    
+    // Function to parse time string and set hours/minutes
+    const parseTimeStr = (timeStr) => {
+      const [time, period] = timeStr.trim().split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      
+      return { hours, minutes };
+    };
+  
+    // Parse start and end times
+    const startTime = parseTimeStr(startStr);
+    const endTime = parseTimeStr(endStr);
+  
+    // Create Date objects with the correct local time
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+  
+    // Get timezone offset in minutes
+    const tzOffset = startDate.getTimezoneOffset();
+  
+    // Set hours and minutes and adjust for timezone
+    startDate.setHours(startTime.hours, startTime.minutes - tzOffset, 0, 0);
+    endDate.setHours(endTime.hours, endTime.minutes - tzOffset, 0, 0);
+  
+    return [startDate.toISOString(), endDate.toISOString()];
+  };
+  
+  
 
   const handlePlayPause = () => {
     setPlaying(!playing);
@@ -313,93 +369,60 @@ function App() {
         </a> */}
       </div>
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" onClick={toggleModal}>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          onClick={toggleModal}
+        >
           <div
-            className="bg-white p-6 rounded-lg shadow-lg w-96" 
+            className="bg-white p-6 rounded-lg shadow-lg w-96"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">Schedule a Meeting</h2>
+            <h2 className="text-xl font-bold mb-4 ">Schedule a Meeting</h2>
+            <h5 className="text-sm font-normal mb-4 text-green-500">
+              <span className="text-black">Hello</span> {name} 👋
+            </h5>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name:</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">
+      Select Date:
+    </label>
+    <input
+      type="date"
+      name="date"
+      value={formData.date}
+      onChange={handleInputChange}
+      min={getCurrentDate()}
+      required
+      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+    />
+  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">
+      Select Time:
+    </label>
+    <TimePicker
+      selectedDate={formData.date}
+      onTimeSelect={(time) => setFormData(prev => ({ ...prev, timeSlot: time }))}
+      disabled={!formData.date || isWeekend(formData.date)}
+    />
+    {formData.date && isWeekend(formData.date) && (
+      <p className="mt-1 text-sm text-red-600">
+        Appointments are not available on weekends
+      </p>
+    )}
+  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number:</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-
-              <div>
-            <label className="block text-sm font-medium text-gray-700">Select Date:</label>
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              min={getCurrentDate()}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Select Time Slot:</label>
-            <select
-              name="timeSlot"
-              value={formData.timeSlot}
-              onChange={handleInputChange}
-              required
-              disabled={!formData.date}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            >
-              <option value="">Select a time slot</option>
-              {availableTimeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
-            {formData.date && availableTimeSlots.length === 0 && (
-              <p className="mt-1 text-sm text-red-600">No available time slots for selected date</p>
-            )}
-          </div>
-
-              <button 
-                type="submit" 
-                className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-all"
-              >
-                Confirm Meeting
-              </button>
-            </form>
+  <button
+    type="submit"
+    disabled={!formData.date || !formData.timeSlot || isWeekend(formData.date)}
+    className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+  >
+    {isLoadingApi ? "Scheduling..." : "Schedule Meeting"}
+  </button>
+</form>
             <button
-              onClick={toggleModal} 
+              onClick={toggleModal}
               className="mt-4 w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-all"
             >
               Close
