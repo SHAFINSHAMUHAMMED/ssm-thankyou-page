@@ -15,7 +15,6 @@ import like_icon from "./assets/svg/like-icon.svg";
 import follow_icon from "./assets/svg/follow-icon.svg";
 import fire_icom from "./assets/svg/fire-icon.svg";
 import Confetti from "./assets/images/confetti.json";
-import TimePicker from "./components/TimePicker/TimePicker";
 function Loader() {
   return (
     <div
@@ -34,16 +33,18 @@ function Loader() {
 }
 
 function App() {
-  const [count, setCount] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [slotLoading, setSlotLoading] = useState(false);
+  const [selectedSlotes, setSelectesSlotes] = useState("");
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [formData, setFormData] = useState({
-    dateTime: "",
+    date: "",
   });
+
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -65,41 +66,14 @@ function App() {
     setIsModalOpen(!isModalOpen);
   };
 
-  const baseTimeSlots = [
-    "9:00 AM - 10:00 AM",
-    "10:00 AM - 11:00 AM",
-    "11:00 AM - 12:00 PM",
-    "12:00 PM - 1:00 PM",
-    "1:00 PM - 2:00 PM",
-    "2:00 PM - 3:00 PM",
-    "3:00 PM - 4:00 PM",
-    "4:00 PM - 5:00 PM",
-    "5:00 PM - 6:00 PM",
-    "6:00 PM - 7:00 PM",
-    "7:00 PM - 8:00 PM",
-  ];
-
   const getCurrentDate = () => {
     const now = new Date();
     return now.toISOString().split("T")[0];
   };
-
-  const isWeekend = (date) => {
-    const day = new Date(date).getDay();
-    return day === 0 || day === 6;
-  };
-
-  const convertTimeStringTo24Hour = (timeStr) => {
-    const [time, period] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-
-    if (period === "PM" && hours !== 12) {
-      hours += 12;
-    } else if (period === "AM" && hours === 12) {
-      hours = 0;
-    }
-
-    return hours * 60 + minutes; // Convert to minutes for easier comparison
+  const getMaxDate = () => {
+    const now = new Date();
+    now.setDate(now.getDate() + 3); // Add 3 days from today
+    return now.toISOString().split("T")[0]; // Returns YYYY-MM-DD
   };
 
   const handleInputChange = (e) => {
@@ -114,147 +88,114 @@ function App() {
   const [contactId, setContactId] = useState("");
   const [name, setName] = useState("");
 
+  const assignUser = async (contactId) => {
+    await fetch("https://crm-dashboard-server-bxxe.onrender.com/api/assignUser", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contactId,
+      }),
+      mode: "cors",
+    });
+  };
+
+  const fetchSlots = async (selectedDate, contactId) => {
+    try {
+      const url = new URL("https://crm-dashboard-server-bxxe.onrender.com/api/slot");
+      url.searchParams.append("selectedDate", selectedDate);
+      url.searchParams.append("contactId", contactId);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "cors",
+      });
+      if (!response.ok) {
+        throw new Error(`Error fetching slots: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Extract slots from the response using the selectedDate as the key
+      const slots = data[selectedDate]?.slots || []; // Default to an empty array if slots are missing
+
+      console.log("Fetched slots:", slots);
+      return slots;
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const contactId = urlParams.get("id");
     const name = urlParams.get("name");
     setContactId(contactId);
     setName(name);
+    if (contactId) {
+      assignUser(contactId);
+    }
   }, []);
 
   useEffect(() => {
-    if (formData.date) {
-      const now = new Date();
-      const selectedDate = new Date(formData.date);
-
-      // Reset time components for date comparison
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const selected = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate()
-      );
-
-      // Return empty slots for weekends
-      if (isWeekend(formData.date)) {
-        setAvailableTimeSlots([]);
-        return;
+    const fetchAvailableSlots = async () => {
+      if (formData.date && contactId) {
+        setSlotLoading(true); // Show loading while fetching slots
+        const slots = await fetchSlots(formData.date, contactId);
+        console.log(slots + "slots");
+        setAvailableTimeSlots(slots); // Store slots in state
+        setSlotLoading(false);
       }
+    };
 
-      if (selected.getTime() === today.getTime()) {
-        // For current day, filter slots based on current time + 2 hours
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const twoHoursFromNow = currentMinutes + 60; // 2 hours in minutes
-
-        const availableSlots = baseTimeSlots.filter((slot) => {
-          const startTime = slot.split(" - ")[0];
-          const startMinutes = convertTimeStringTo24Hour(startTime);
-          return startMinutes >= twoHoursFromNow;
-        });
-
-        setAvailableTimeSlots(availableSlots);
-      } else if (selected > today) {
-        // Future date - show all slots
-        setAvailableTimeSlots(baseTimeSlots);
-      } else {
-        // Past date - show no slots
-        setAvailableTimeSlots([]);
-      }
-    } else {
-      setAvailableTimeSlots([]);
-    }
-  }, [formData.date]);
+    fetchAvailableSlots();
+  }, [formData.date, contactId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoadingApi(true);
 
     try {
-      // Convert selected date and time slot to proper format
-      const [startTime, endTime] = convertTimeSlotToUTC(formData.date, formData.timeSlot);
-      console.log("Converted Start Time:", startTime);
-      console.log("Converted End Time:", endTime);
-      const response = await fetch("http://localhost:3003/api/appointment", {
+      const response = await fetch("https://crm-dashboard-server-bxxe.onrender.com/api/appointment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          startTime,
-          endTime,
-          contactId // Make sure this is available from your URL params
+          startTime: selectedSlotes,
+          contactId, 
         }),
         mode: "cors",
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const result = await response.json();
-      console.log("Server Response:", result);
       alert("Your meeting has been scheduled!");
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error scheduling meeting:", error);
-      alert("This slote is already taken!");
+      alert("Something went wrong!");
     }
     setIsLoadingApi(false);
   };
-  
-  const convertTimeSlotToUTC = (date, timeSlot) => {
-    // Extract start and end times from the time slot
-    const [startStr, endStr] = timeSlot.split(' - ');
-    
-    // Function to parse time string and set hours/minutes
-    const parseTimeStr = (timeStr) => {
-      const [time, period] = timeStr.trim().split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      
-      // Convert to 24-hour format
-      if (period === 'PM' && hours !== 12) {
-        hours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        hours = 0;
-      }
-      
-      return { hours, minutes };
-    };
-  
-    // Parse start and end times
-    const startTime = parseTimeStr(startStr);
-    const endTime = parseTimeStr(endStr);
-  
-    // Create Date objects with the correct local time
-    const startDate = new Date(date);
-    const endDate = new Date(date);
-  
-    // Get timezone offset in minutes
-    const tzOffset = startDate.getTimezoneOffset();
-  
-    // Set hours and minutes and adjust for timezone
-    startDate.setHours(startTime.hours, startTime.minutes - tzOffset, 0, 0);
-    endDate.setHours(endTime.hours, endTime.minutes - tzOffset, 0, 0);
-  
-    return [startDate.toISOString(), endDate.toISOString()];
-  };
-  
-  
 
   const handlePlayPause = () => {
     setPlaying(!playing);
-  };
-  const handleClick = () => {
-    window.open(
-      "https://api.whatsapp.com/send?phone=971502432170&text=Hello%2C%20I%20have%20a%20question%20about%20your%20MBA%20program.",
-
-      "_blank"
-    );
   };
 
   if (isLoading) {
     return <Loading />;
   }
+
+  console.log(selectedSlotes);
   return (
     <>
       <Header />
@@ -274,103 +215,16 @@ function App() {
         <h2 className="hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s">
           Thank You
         </h2>
-        <button
+        {contactId &&<button
           onClick={toggleModal}
           className="schedule-meeting-button hidden-initially custom-animate__zoomIn animate__animated animate__zoomIn animate__delay-2s"
         >
           <span>Schedule a Meeting</span>
-        </button>
-
-        {/* Modal for Scheduling Meeting */}
-        {/* {isModalOpen && (
-          <div className="modal-overlay">
-            <div
-              className="modal-content"
-              onClick={(e) => e.stopPropagation()} // Prevents the event from propagating to the overlay
-            >
-              <iframe
-                src="https://api.leadconnectorhq.com/widget/booking/gwf5nNXuPFx5dFdKdV1b"
-                style={{
-                  width: "100%",
-                  height: "700px",
-                  border: "none",
-                  overflow: "auto", // Allow content scrolling inside the iframe
-                }}
-                scrolling="yes" // Enable iframe scrolling
-                id="gwf5nNXuPFx5dFdKdV1b_1737024800692"
-              ></iframe>
-              <script
-                src="https://link.msgsndr.com/js/form_embed.js"
-                type="text/javascript"
-              ></script>
-            </div>
-          </div>
-        )} */}
-
-        {/* Ask a Question on WhatsApp button */}
-        {/* <a
-          onClick={handleClick}
-          href=""
-          target="_blank"
-          rel="noopener noreferrer"
-          className="whatsapp-question-button hidden-initially custom-animate__fadeInUp animate__animated animate__fadeInUp animate__delay-1s"
-        >
-          Ask a Question on WhatsApp
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="42"
-            height="42"
-            viewBox="0 0 42 42"
-            fill="none"
-          >
-            <path
-              d="M0 41.0841L2.90374 30.5397C1.10852 27.4447 0.166769 23.9397 0.176579 20.3565C0.176579 9.12871 9.35868 0 20.6303 0C26.1042 0 31.2446 2.11864 35.1 5.96539C38.9651 9.81214 41.0938 14.9281 41.084 20.3663C41.084 31.5941 31.9019 40.7228 20.6205 40.7228H20.6107C17.187 40.7228 13.8222 39.8636 10.8302 38.2429L0 41.0841ZM11.3501 34.5622L11.9681 34.9332C14.5776 36.4758 17.5696 37.2861 20.6205 37.2959H20.6303C29.9988 37.2959 37.6309 29.7098 37.6309 20.376C37.6309 15.8556 35.8651 11.6086 32.6573 8.40622C29.4494 5.20385 25.1723 3.44645 20.6303 3.44645C11.2618 3.43669 3.62968 11.0228 3.62968 20.3565C3.62968 23.5491 4.52238 26.6636 6.22931 29.3583L6.63152 30.0027L4.91478 36.2414L11.3501 34.5622Z"
-              fill="white"
-            ></path>
-            <path
-              d="M0.716797 40.3715L3.52244 30.1884C1.78608 27.2105 0.873756 23.8227 0.873756 20.3665C0.883566 9.52917 9.74194 0.712891 20.631 0.712891C25.9185 0.712891 30.8725 2.76319 34.6003 6.47325C38.3281 10.1833 40.3784 15.1236 40.3784 20.3762C40.3784 31.2135 31.5102 40.0298 20.631 40.0298H20.6212C17.3152 40.0298 14.0681 39.1999 11.184 37.6378L0.716797 40.3715Z"
-              fill="url(#paint0_linear_1154_1058)"
-            ></path>
-            <path
-              d="M0 41.0841L2.90374 30.5397C1.10852 27.4447 0.166769 23.9397 0.176579 20.3565C0.176579 9.12871 9.35868 0 20.6303 0C26.1042 0 31.2446 2.11864 35.1 5.96539C38.9651 9.81214 41.0938 14.9281 41.084 20.3663C41.084 31.5941 31.9019 40.7228 20.6205 40.7228H20.6107C17.187 40.7228 13.8222 39.8636 10.8302 38.2429L0 41.0841ZM11.3501 34.5622L11.9681 34.9332C14.5776 36.4758 17.5696 37.2861 20.6205 37.2959H20.6303C29.9988 37.2959 37.6309 29.7098 37.6309 20.376C37.6309 15.8556 35.8651 11.6086 32.6573 8.40622C29.4494 5.20385 25.1723 3.44645 20.6303 3.44645C11.2618 3.43669 3.62968 11.0228 3.62968 20.3565C3.62968 23.5491 4.52238 26.6636 6.22931 29.3583L6.63152 30.0027L4.91478 36.2414L11.3501 34.5622Z"
-              fill="url(#paint1_linear_1154_1058)"
-            ></path>
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M15.5199 11.8445C15.1373 10.9951 14.7351 10.9756 14.3722 10.9658C14.0779 10.9561 13.7345 10.9561 13.3912 10.9561C13.0478 10.9561 12.4985 11.083 12.0276 11.5907C11.5567 12.0984 10.2422 13.3285 10.2422 15.8377C10.2422 18.3371 12.0766 20.7584 12.3317 21.1001C12.5868 21.4419 15.8731 26.7433 21.0625 28.7839C25.3789 30.4827 26.2618 30.141 27.1938 30.0531C28.1257 29.9652 30.2152 28.8229 30.6469 27.6318C31.0687 26.4407 31.0687 25.4253 30.9412 25.2105C30.8136 24.9957 30.4703 24.8688 29.9602 24.6149C29.45 24.3611 26.9387 23.1309 26.4678 22.9552C25.9969 22.7892 25.6536 22.7013 25.3201 23.209C24.9767 23.7167 23.9957 24.859 23.7014 25.2007C23.4071 25.5425 23.103 25.5815 22.5929 25.3277C22.0828 25.0738 20.4347 24.5368 18.4825 22.799C16.962 21.4516 15.932 19.7821 15.6377 19.2744C15.3434 18.7667 15.6082 18.4933 15.8633 18.2395C16.0889 18.0149 16.3734 17.6439 16.6285 17.351C16.8835 17.0581 16.9718 16.8433 17.1386 16.5016C17.3053 16.1599 17.2269 15.867 17.0993 15.6132C16.9718 15.3691 15.9712 12.8501 15.5199 11.8445Z"
-              fill="white"
-            ></path>
-            <defs>
-              <linearGradient
-                id="paint0_linear_1154_1058"
-                x1="20.5466"
-                y1="40.3695"
-                x2="20.5466"
-                y2="0.711503"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stop-color="#20B038"></stop>
-                <stop offset="1" stop-color="#60D66A"></stop>
-              </linearGradient>
-              <linearGradient
-                id="paint1_linear_1154_1058"
-                x1="20.546"
-                y1="41.0802"
-                x2="20.546"
-                y2="0"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stop-color="#F9F9F9"></stop>
-                <stop offset="1" stop-color="white"></stop>
-              </linearGradient>
-            </defs>
-          </svg>
-        </a> */}
+        </button>}
       </div>
       {isModalOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          className="fixed z-10 inset-0 bg-black bg-opacity-50 flex justify-center items-center"
           onClick={toggleModal}
         >
           <div
@@ -382,45 +236,63 @@ function App() {
               <span className="text-black">Hello</span> {name} 👋
             </h5>
             <form onSubmit={handleSubmit} className="space-y-4">
-  <div>
-    <label className="block text-sm font-medium text-gray-700">
-      Select Date:
-    </label>
-    <input
-      type="date"
-      name="date"
-      value={formData.date}
-      onChange={handleInputChange}
-      min={getCurrentDate()}
-      required
-      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-    />
-  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Date:
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  min={getCurrentDate()}
+                  max={getMaxDate()}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                />
+              </div>
+              <div className="max-h-[300px] overflow-scroll">
+                <label className="block text-sm font-medium text-gray-700">
+                  Available Time Slots:
+                </label>
 
-  <div>
-    <label className="block text-sm font-medium text-gray-700">
-      Select Time:
-    </label>
-    <TimePicker
-      selectedDate={formData.date}
-      onTimeSelect={(time) => setFormData(prev => ({ ...prev, timeSlot: time }))}
-      disabled={!formData.date || isWeekend(formData.date)}
-    />
-    {formData.date && isWeekend(formData.date) && (
-      <p className="mt-1 text-sm text-red-600">
-        Appointments are not available on weekends
-      </p>
-    )}
-  </div>
+                {slotLoading ? (
+                  <p>Loading slots...</p>
+                ) : availableTimeSlots.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {availableTimeSlots.map((slot, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className={`p-2 border rounded-md ${
+                          selectedSlotes === slot
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200"
+                        }`}
+                        onClick={() => setSelectesSlotes(slot)}
+                      >
+                        {new Date(slot).toLocaleTimeString("en-US", {
+                          timeZone: "Asia/Dubai", // Ensure the time is converted correctly
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true, // Display AM/PM format
+                        })}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No available slots for this date.</p>
+                )}
+              </div>
 
-  <button
-    type="submit"
-    disabled={!formData.date || !formData.timeSlot || isWeekend(formData.date)}
-    className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
-  >
-    {isLoadingApi ? "Scheduling..." : "Schedule Meeting"}
-  </button>
-</form>
+              <button
+                type="submit"
+                disabled={!formData.date || !selectedSlotes}
+                className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isLoadingApi ? "Scheduling..." : "Schedule Meeting"}
+              </button>
+            </form>
             <button
               onClick={toggleModal}
               className="mt-4 w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-all"
