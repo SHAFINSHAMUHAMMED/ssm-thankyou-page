@@ -121,10 +121,9 @@ function App() {
     const contactId = urlParams.get("id");
     const name = urlParams.get("name");
     const page = urlParams.get("page")
-    console.log(contactId,name,page)
     setContactId(contactId);
     setName(name);
-    setPage(page)
+    setPage(page);
   }, []);
 
   useEffect(() => {
