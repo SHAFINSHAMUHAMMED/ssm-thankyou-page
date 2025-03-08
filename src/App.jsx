@@ -113,13 +113,18 @@ function App() {
 
   const [contactId, setContactId] = useState("");
   const [name, setName] = useState("");
+  const [page, setPage] = useState("");
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const contactId = urlParams.get("id");
     const name = urlParams.get("name");
+    const page = urlParams.get("page")
+    console.log(contactId,name,page)
     setContactId(contactId);
     setName(name);
+    setPage(page)
   }, []);
 
   useEffect(() => {
@@ -174,7 +179,7 @@ function App() {
       const [startTime, endTime] = convertTimeSlotToUTC(formData.date, formData.timeSlot);
       console.log("Converted Start Time:", startTime);
       console.log("Converted End Time:", endTime);
-      const response = await fetch("http://localhost:3003/api/appointment", {
+      const response = await fetch("https://crm-dashboard-server-bxxe.onrender.com/api/appointment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -182,6 +187,7 @@ function App() {
         body: JSON.stringify({
           startTime,
           endTime,
+          page,
           contactId // Make sure this is available from your URL params
         }),
         mode: "cors",
